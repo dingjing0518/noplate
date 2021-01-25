@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <script src="lib/jquery.min.js"></script>
+</head>
+<body style="text-align: center;">
+<p class="icon-er"></p>
+<div class="divv">
+    <img src="http://www.visionunion.com/admin/data/file/img/20191126/20191126000605.gif" alt="">
+
+</div>
+
+</body>
+<script>
+    let appid = "wxf8d4e15b5a5a1ea0";
+    let urlNow = "http://out.jinshipark.com/noplate/entrance.html";
+    let scope = "snsapi_base";
+    let openId = '';
+    let search = window.location.search;
+    let areaName = getSearchString('areaName', search);//区域名称
+    let parkId = getSearchString('parkId', search);//停车场Id
+    let lpInboundCname = getSearchString('lpInboundCname', search);//入场口名
+    let code = getSearchString('code', search);
+    let state = getSearchString('state', search);
+    let params = '';
+    if (code !== '' && code !== undefined) {
+        let stateStr = decodeURIComponent(state);
+        let arr = stateStr.split(",");
+        areaName = arr[0];
+        parkId = arr[1];
+        lpInboundCname = arr[2];
+        let param = {
+            "code": code
+        };
+        $.ajax({
+            url: "http://hfzf.jinshipark.com/hfzf-api/wxApi/getOpenId?code",
+            contentType: "application/json",
+            dataType: "json",
+            type: "POST",
+            data: JSON.stringify(param),
+            success: function (data) {
+                if (data.status === 200) {
+                    openId = data.data;
+                    save();
+                } else {
+                    window.location.href = './error.html?msg=' + encodeURIComponent(data.msg);
+                }
+            },
+            error: function (err) {
+
+            },
+        });
+    } else {
+        var browser = navigator.userAgent.toLowerCase();
+        if (browser.match(/Alipay/i) == "alipay") {
+            alert("请用微信扫一扫入场");
+        } else if (browser.match(/MicroMessenger/i) == "micromessenger") {
+            state = areaName + "," + parkId + "," + lpInboundCname;
+            let url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + appid + '&redirect_uri=' + urlNow + '&response_type=code&scope=' + scope + '&state=' + encodeURIComponent(state) + '&connect_redirect=1#wechat_redirect';
+            window.location.replace(url);
+        }
+    }
+    //入场
+    function save() {
+        let toUpperCase = openId.replace("_", "").replace("-", "").toUpperCase();
+        let carNum = "无" + toUpperCase.substr(toUpperCase.length - 6, toUpperCase.length);
+        params = {
+            lpLincensePlateIdCar: carNum,
+            lpCarType: areaName,
+            lpParkingName: parkId,
+            lpInboundCname: lpInboundCname
+        };
+        $.ajax({
+            url: "http://hfzf.jinshipark.com/hfzf-api/lincensePlate/saveLincensePlate",
+            // url: "http://localhost:8090/lincensePlate/saveLincensePlate",
+            contentType: "application/json",
+            dataType: "json",
+            type: "POST",
+            data: JSON.stringify(params),
+            success: function (res) {
+                if (res.status === 200) {
+                    window.location.href = './success.html?parkId=' + parkId;
+                } else if (res.status === 500) {
+                    window.location.href = './error.html?msg=' + encodeURIComponent(res.msg) + "&parkId=" + parkId;
+                }
+            },
+            err: function (res) {
+                console.log(res)
+            }
+        });
+    }
+
+    function getSearchString(key, Url) {
+        var str = Url;
+        str = str.substring(1, str.length); // 获取URL中?之后的字符（去掉第一位的问号）
+        // 以&分隔字符串，获得类似name=xiaoli这样的元素数组
+        var arr = str.split("&");
+        var obj = new Object();
+        // 将每一个数组元素以=分隔并赋给obj对象
+        for (var i = 0; i < arr.length; i++) {
+            var tmp_arr = arr[i].split("=");
+            obj[decodeURIComponent(tmp_arr[0])] = decodeURIComponent(tmp_arr[1]);
+        }
+        return obj[key];
+    }
+</script>
+<style>
+    .divv {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .divv > img {
+        width: 100%;
+        margin-top: 200px;
+    }
+</style>
+</html>
