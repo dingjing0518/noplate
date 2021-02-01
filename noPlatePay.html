@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="./libs/style.add.css" type="text/css">
+    <script src="libs/jquery.min.js"></script>
+</head>
+<style>
+    .box {
+        width: 90%;
+        height: 45px;
+        display: flex;
+        margin-left: 5%;
+    }
+
+    .box p {
+        height: 30px;
+        line-height: 30px;
+    }
+
+    .box p:first-child {
+        flex: 1;
+        text-align: center;
+        border: 1px rgb(22, 21, 21) solid;
+    }
+
+    .box p:last-child {
+        flex: 3;
+        border: 1px rgb(102, 172, 139) solid;
+        padding-left: 10px;
+    }
+
+    .goPay {
+        width: 100%;
+        height: 40px;
+        text-align: center;
+        line-height: 40px;
+        margin-top: 5%;
+    }
+
+    .goPay button {
+        width: 120px;
+        height: 38px;
+        color: rgb(32, 158, 53);
+        font-size: 20px;
+    }
+
+    #getCar {
+        margin-top: 15%;
+    }
+
+    #useFoot {
+        margin-bottom: 5%;
+    }
+</style>
+
+<body>
+<!-- <p class="icon-er"></p> -->
+<!-- <div class="divv">
+    <img src="http://www.visionunion.com/admin/data/file/img/20191126/20191126000605.gif" alt="">
+</div>  -->
+<div id="container">
+    <div class="icon-divv">
+        <a id="headA">
+            <img id="useHead" onerror="this.src='http://syq.jinshipark.com/images/yhq-first1.jpg'">
+        </a>
+    </div>
+    <div id="carLicenseBox">
+        <div id='getCar'>
+            <div class="box">
+                <p>车牌号:</p>
+                <p id='plateNumber'></p>
+            </div>
+            <div class="box">
+                <p>入场时间:</p>
+                <p id='intoTime'></p>
+            </div>
+            <div class="box">
+                <p>出场时间:</p>
+                <p id='goOutTime'></p>
+            </div>
+            <div class="box">
+                <p>停车时长:</p>
+                <p id='stopTime'></p>
+            </div>
+            <div class="box">
+                <p>支付金额:</p>
+                <p id='payNum'></p>
+            </div>
+            <div class="goPay">
+                <button id="pay">支付</button>
+            </div>
+        </div>
+    </div>
+    <div class="icon-divv">
+        <a id="footA">
+            <img id="useFoot" onerror="this.src='http://syq.jinshipark.com/images/yhq-first2.jpg'">
+        </a>
+    </div>
+    <div style="display: none;">
+        <p id="aaa"></p>
+    </div>
+</div>
+</body>
+<script>
+    let nowTime = new Date();  //现在的时间
+    let fmt = "YYYY-mm-dd HH:MM";
+    let search = window.location.search;
+    let parkId = getSearchString('parkId', search);
+    let lpDepartureCname = getSearchString('lpDepartureCname', search);
+    let openId = getSearchString('openId', search);
+    let params = '';
+    //加载上下广告图片
+    if (parkId !== '' && parkId !== undefined) {
+        getImages();
+    } else {
+        $("#useHead").attr("src", "http://syq.jinshipark.com/images/yhq-first1.jpg");
+        $("#useFoot").attr("src", "http://syq.jinshipark.com/images/yhq-first2.jpg");
+    }
+
+    //获取
+    function getImages() {
+        // parkId = "3205830001";
+        params = {
+            parkId: parkId,
+            type: "out-First"
+        };
+        $.ajax({
+            url: "http://hfzf.jinshipark.com/hfzf-api/jinshiparkAdvertImage/getJinshiparkAdvertImageByTypeAndArea",
+            // url: "http://localhost:8090/jinshiparkAdvertImage/getJinshiparkAdvertImageByTypeAndArea",
+            contentType: "application/json",
+            dataType: "json",
+            type: "POST",
+            data: JSON.stringify(params),
+            success: function (res) {
+                if (res.status === 200) {
+                    for (let i = 0; i < res.data.length; i++) {
+                        if (res.data[i].address === "out-FirstUp") {
+                            if (res.data[i].imagepath != null) {
+                                $("#useHead").attr("src", res.data[i].imagepath);
+                            }
+                            if (res.data[i].weblink != null) {
+                                document.getElementById("headA").href = res.data[i].weblink;
+                            }
+                        } else if (res.data[i].address === "out-FirstDown") {
+                            if (res.data[i].imagepath != null) {
+                                $("#useFoot").attr("src", res.data[i].imagepath);
+                            }
+                            if (res.data[i].weblink != null) {
+                                document.getElementById("footA").href = res.data[i].weblink;
+                            }
+                        }
+                    }
+                }
+            },
+            err: function (res) {
+                console.log(res)
+            }
+        });
+    }
+
+    //去支付
+    var pay = document.getElementById('pay');
+    pay.onclick = function () {
+        let countdown = 10;
+        setTime(countdown);
+
+        function setTime(countdown) {
+            if (countdown === 0) {
+                pay.removeAttribute("disabled");
+                document.getElementById('pay').innerHTML = "支付";
+            } else {
+                pay.setAttribute("disabled", true);
+                document.getElementById('pay').innerHTML = "支付中(" + countdown + ")";
+                countdown--;
+                setTimeout(function () {
+                    setTime(countdown);
+                }, 1000)
+            }
+        }
+        if (openId === undefined || openId === '') {
+            //支付宝
+            params = {
+                pay_amt: document.getElementById('payNum').innerHTML,
+                parkId: parkId,
+                plate: document.getElementById('plateNumber').innerHTML
+            };
+            $.ajax({
+                url: "http://hfzf.jinshipark.com/hfzf-api/adapay/alipayExecutePayment",
+                // url: "http://localhost:8090/adapay/alipayExecutePayment",
+                contentType: "application/json",
+                dataType: "json",
+                type: "POST",
+                data: JSON.stringify(params),
+                success: function (res) {
+                    if (res.status === 200) {
+                        window.location.href = res.data.expend.pay_info;
+                    }
+                },
+                err: function (res) {
+                    console.log(res)
+                }
+            });
+        } else {
+            //微信
+            params = {
+                pay_amt: document.getElementById('payNum').innerHTML,
+                open_id: openId,
+                parkId: parkId,
+                plate: document.getElementById('plateNumber').innerHTML
+            };
+            $.ajax({
+                url: "http://hfzf.jinshipark.com/hfzf-api/adapay/wxPubExecutePayment",
+                // url: "http://localhost:8090/adapay/alipayExecutePayment",
+                contentType: "application/json",
+                dataType: "json",
+                type: "POST",
+                data: JSON.stringify(params),
+                success: function (res) {
+                    if (res.status === 200) {
+                        let jsStr = res.data;
+
+                        function onBridgeReady(jsStr) {
+                            WeixinJSBridge.invoke(
+                                'getBrandWCPayRequest', {
+                                    "appId": jsStr.appId,
+                                    "timeStamp": jsStr.timeStamp,
+                                    "nonceStr": jsStr.nonceStr,
+                                    "package": jsStr.package,
+                                    "signType": jsStr.signType,
+                                    "paySign": jsStr.paySign
+                                },
+                                function (res) {
+                                    if (res.err_msg == "get_brand_wcpay_request:ok") {
+                                        // 使用以上方式判断前端返回,微信团队郑重提示：
+                                        //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+                                    }
+                                });
+                        }
+
+                        if (typeof WeixinJSBridge == "undefined") {
+                            if (document.addEventListener) {
+                                document.addEventListener('WeixinJSBridgeReady', onBridgeReady(jsStr), false);
+                            } else if (document.attachEvent) {
+                                document.attachEvent('WeixinJSBridgeReady', onBridgeReady(jsStr));
+                                document.attachEvent('onWeixinJSBridgeReady', onBridgeReady(jsStr));
+                            }
+                        } else {
+                            onBridgeReady(jsStr);
+                        }
+                    } else if (res.status === 500) {
+                        window.location.href = './error.html?msg=' + encodeURIComponent(res.msg);
+                    }
+                },
+                err: function (res) {
+                    console.log(res)
+                }
+            });
+        }
+    };
+
+    function getParkInfo() {
+        let toUpperCase = openId.replace("_", "").replace("-", "").toUpperCase();
+        let carNum = "无" + toUpperCase.substr(toUpperCase.length - 6, toUpperCase.length);
+        params = {
+            "lpLincensePlateIdCar": carNum
+        };
+        $.ajax({
+            // url: "http://hfzf.jinshipark.com/hfzf-api/lincensePlate/getLincensePlateByNoPlate",
+            url: "http://localhost:8090/lincensePlate/getLincensePlateByNoPlate",
+            contentType: "application/json",
+            dataType: "json",
+            type: "POST",
+            data: JSON.stringify(params),
+            success: function (data) {
+                if (data.status === 200) {
+                    //车牌号
+                    document.getElementById('plateNumber').innerHTML = data.data.lpLincensePlateIdCar;
+                    //进场时间
+                    document.getElementById('intoTime').innerHTML = dateFormat(fmt, new Date(data.data.lpInboundTime));
+                    //出场时间
+                    document.getElementById('goOutTime').innerHTML = dateFormat(fmt, new Date(data.data.lpDepartureTime));
+                    //停车时长
+                    document.getElementById('stopTime').innerHTML = MinusToDHM(Number(data.data.lpParkingOften));
+                    //支付金额
+                    document.getElementById('payNum').innerHTML = data.data.lpParkingCost;
+                }
+            },
+            error: function (err) {
+                console.log(err)
+
+            },
+        });
+    }
+
+    function getSearchString(key, Url) {
+        var str = Url;
+        str = str.substring(1, str.length); // 获取URL中?之后的字符（去掉第一位的问号）
+        // 以&分隔字符串，获得类似name=xiaoli这样的元素数组
+        var arr = str.split("&");
+        var obj = new Object();
+        // 将每一个数组元素以=分隔并赋给obj对象
+        for (var i = 0; i < arr.length; i++) {
+            var tmp_arr = arr[i].split("=");
+            obj[decodeURIComponent(tmp_arr[0])] = decodeURIComponent(tmp_arr[1]);
+        }
+        return obj[key];
+    }
+
+    //获取当前 时间
+    function getdate() {
+        const dt = new Date();
+        const y = dt.getFullYear();
+        const m = dt.getMonth() + 1;
+        const d = dt.getDate();
+        const hh = dt.getHours().toString().padStart(2, 0);
+        const mm = dt.getMinutes().toString().padStart(2, 0);
+        const ss = dt.getSeconds().toString().padStart(2, 0);
+        const time = y + '-' + m + '-' + d + ' ' + hh + ':' + mm + ':' + ss;
+        return time;
+    }
+
+    //两个时间相减
+    function DateMinus(date1, date2) {//date1:小日期   date2:大日期
+        var sdate = new Date(date2.replace(/-/g, '/')).getTime();
+        var now = new Date(date1.replace(/-/g, '/')).getTime();
+        var days = (sdate - now) / 1000;
+        var timestamp_day = Math.floor(days / 86400)
+        var timestamp_hour = Math.floor(days % 86400 / 3600)
+        var timestamp_minutes = Math.floor(days % 86400 % 3600 / 60)
+        return timestamp_day + '天' + timestamp_hour + '时' + timestamp_minutes + '分';
+    }
+
+    //分钟转化为天时分
+    function MinusToDHM(minute) {
+        var timestamp_day = Math.floor(minute / 60 / 24);
+        var timestamp_hour = Math.floor(minute % 1440 / 60);
+        var timestamp_minutes = Math.floor(minute % 1440 % 60);
+        return timestamp_day + '天' + timestamp_hour + '时' + timestamp_minutes + '分';
+    }
+
+    getParkInfo();
+
+    function dateFormat(fmt, date) {
+        let ret;
+        const opt = {
+            "Y+": date.getFullYear().toString(),        // 年
+            "m+": (date.getMonth() + 1).toString(),     // 月
+            "d+": date.getDate().toString(),            // 日
+            "H+": date.getHours().toString(),           // 时
+            "M+": date.getMinutes().toString(),         // 分
+            "S+": date.getSeconds().toString()          // 秒
+            // 有其他格式化字符需求可以继续添加，必须转化成字符串
+        };
+        for (let k in opt) {
+            ret = new RegExp("(" + k + ")").exec(fmt);
+            if (ret) {
+                fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+            }
+        }
+        return fmt;
+    }
+
+    setTimer();
+
+    function setTimer() {
+        // setInterval(checkPayResult, 3000);
+    }
+
+    // 查询是否支付成功
+    function checkPayResult() {
+        alert("---");
+        // var orderId = this.orderId;
+        // var userInfo = this.userInfo;
+        //
+        // // 发起请求获得微信支付扫描二维码
+        // var serverUrl = app.serverUrl;
+        // axios.defaults.withCredentials = true;
+        // axios.post(
+        //     serverUrl + '/orders/getPaidOrderInfo?orderId=' + orderId,
+        //     {},
+        //     {
+        //         headers: {
+        //             'headerUserId': userInfo.id,
+        //             'headerUserToken': userInfo.userUniqueToken
+        //         }
+        //     })
+        //     .then(res => {
+        //         if (res.data.status == 200) {
+        //             var orderStatus = res.data.data;
+        //             // console.log(orderStatus);
+        //
+        //             if (orderStatus.orderStatus == 20) {
+        //                 window.location.href = "success.html?orderId=" + orderId + "&orderAmount=" + this.paymentInfo.amount;
+        //             }
+        //         } else {
+        //             alert(res.data.msg);
+        //         }
+        //     });
+    }
+</script>
+</html>

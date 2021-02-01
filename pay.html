@@ -44,7 +44,7 @@
             success: function (data) {
                 if (data.status === 200) {
                     openId = data.data;
-                    pay();
+                    window.location.href = './noPlatePay.html?parkId=' + parkId + '&lpDepartureCname=' + lpDepartureCname + '&openId=' + openId;
                 } else {
                     window.location.href = './error.html?msg=' + encodeURIComponent(data.msg) + "&parkId=" + parkId;
                 }
@@ -65,62 +65,62 @@
     }
 
     //支付
-    function pay() {
-        let toUpperCase = openId.replace("_", "").replace("-", "").toUpperCase();
-        let carNum = "无" + toUpperCase.substr(toUpperCase.length - 6, toUpperCase.length);
-        params = {
-            plate: carNum,
-            lpDepartureCname: lpDepartureCname,
-            open_id: openId
-        };
-        $.ajax({
-            url: "http://hfzf.jinshipark.com/hfzf-api/adapay/noPlatePayExecutePayment",
-            // url: "http://localhost:8090/adapay/noPlatePayExecutePayment",
-            contentType: "application/json",
-            dataType: "json",
-            type: "POST",
-            data: JSON.stringify(params),
-            success: function (res) {
-                if (res.status === 200) {
-                    let jsStr = res.data;
-
-                    function onBridgeReady(jsStr) {
-                        WeixinJSBridge.invoke(
-                            'getBrandWCPayRequest', {
-                                "appId": jsStr.appId,
-                                "timeStamp": jsStr.timeStamp,
-                                "nonceStr": jsStr.nonceStr,
-                                "package": jsStr.package,
-                                "signType": jsStr.signType,
-                                "paySign": jsStr.paySign
-                            },
-                            function (res) {
-                                if (res.err_msg == "get_brand_wcpay_request:ok") {
-                                    // 使用以上方式判断前端返回,微信团队郑重提示：
-                                    //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
-                                }
-                            });
-                    }
-
-                    if (typeof WeixinJSBridge == "undefined") {
-                        if (document.addEventListener) {
-                            document.addEventListener('WeixinJSBridgeReady', onBridgeReady(jsStr), false);
-                        } else if (document.attachEvent) {
-                            document.attachEvent('WeixinJSBridgeReady', onBridgeReady(jsStr));
-                            document.attachEvent('onWeixinJSBridgeReady', onBridgeReady(jsStr));
-                        }
-                    } else {
-                        onBridgeReady(jsStr);
-                    }
-                } else if (res.status === 500) {
-                    window.location.href = './error.html?msg=' + encodeURIComponent(res.msg) + "&parkId=" + parkId;
-                }
-            },
-            err: function (res) {
-                console.log(res)
-            }
-        });
-    }
+    // function pay() {
+    //     let toUpperCase = openId.replace("_", "").replace("-", "").toUpperCase();
+    //     let carNum = "无" + toUpperCase.substr(toUpperCase.length - 6, toUpperCase.length);
+    //     params = {
+    //         plate: carNum,
+    //         lpDepartureCname: lpDepartureCname,
+    //         open_id: openId
+    //     };
+    //     $.ajax({
+    //         url: "http://hfzf.jinshipark.com/hfzf-api/adapay/noPlatePayExecutePayment",
+    //         // url: "http://localhost:8090/adapay/noPlatePayExecutePayment",
+    //         contentType: "application/json",
+    //         dataType: "json",
+    //         type: "POST",
+    //         data: JSON.stringify(params),
+    //         success: function (res) {
+    //             if (res.status === 200) {
+    //                 let jsStr = res.data;
+    //
+    //                 function onBridgeReady(jsStr) {
+    //                     WeixinJSBridge.invoke(
+    //                         'getBrandWCPayRequest', {
+    //                             "appId": jsStr.appId,
+    //                             "timeStamp": jsStr.timeStamp,
+    //                             "nonceStr": jsStr.nonceStr,
+    //                             "package": jsStr.package,
+    //                             "signType": jsStr.signType,
+    //                             "paySign": jsStr.paySign
+    //                         },
+    //                         function (res) {
+    //                             if (res.err_msg == "get_brand_wcpay_request:ok") {
+    //                                 // 使用以上方式判断前端返回,微信团队郑重提示：
+    //                                 //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+    //                             }
+    //                         });
+    //                 }
+    //
+    //                 if (typeof WeixinJSBridge == "undefined") {
+    //                     if (document.addEventListener) {
+    //                         document.addEventListener('WeixinJSBridgeReady', onBridgeReady(jsStr), false);
+    //                     } else if (document.attachEvent) {
+    //                         document.attachEvent('WeixinJSBridgeReady', onBridgeReady(jsStr));
+    //                         document.attachEvent('onWeixinJSBridgeReady', onBridgeReady(jsStr));
+    //                     }
+    //                 } else {
+    //                     onBridgeReady(jsStr);
+    //                 }
+    //             } else if (res.status === 500) {
+    //                 window.location.href = './error.html?msg=' + encodeURIComponent(res.msg) + "&parkId=" + parkId;
+    //             }
+    //         },
+    //         err: function (res) {
+    //             console.log(res)
+    //         }
+    //     });
+    // }
 
     function getSearchString(key, Url) {
         var str = Url;
