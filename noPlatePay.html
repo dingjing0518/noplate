@@ -108,7 +108,6 @@
 </div>
 </body>
 <script>
-    let nowTime = new Date();  //现在的时间
     let fmt = "YYYY-mm-dd HH:MM";
     let search = window.location.search;
     let parkId = getSearchString('parkId', search);
@@ -125,7 +124,6 @@
 
     //获取
     function getImages() {
-        // parkId = "3205830001";
         params = {
             parkId: parkId,
             type: "out-First"
@@ -183,85 +181,61 @@
                 }, 1000)
             }
         }
-        if (openId === undefined || openId === '') {
-            //支付宝
-            params = {
-                pay_amt: document.getElementById('payNum').innerHTML,
-                parkId: parkId,
-                plate: document.getElementById('plateNumber').innerHTML
-            };
-            $.ajax({
-                url: "http://hfzf.jinshipark.com/hfzf-api/adapay/alipayExecutePayment",
-                // url: "http://localhost:8090/adapay/alipayExecutePayment",
-                contentType: "application/json",
-                dataType: "json",
-                type: "POST",
-                data: JSON.stringify(params),
-                success: function (res) {
-                    if (res.status === 200) {
-                        window.location.href = res.data.expend.pay_info;
-                    }
-                },
-                err: function (res) {
-                    console.log(res)
-                }
-            });
-        } else {
-            //微信
-            params = {
-                pay_amt: document.getElementById('payNum').innerHTML,
-                open_id: openId,
-                parkId: parkId,
-                plate: document.getElementById('plateNumber').innerHTML
-            };
-            $.ajax({
-                url: "http://hfzf.jinshipark.com/hfzf-api/adapay/wxPubExecutePayment",
-                // url: "http://localhost:8090/adapay/alipayExecutePayment",
-                contentType: "application/json",
-                dataType: "json",
-                type: "POST",
-                data: JSON.stringify(params),
-                success: function (res) {
-                    if (res.status === 200) {
-                        let jsStr = res.data;
 
-                        function onBridgeReady(jsStr) {
-                            WeixinJSBridge.invoke(
-                                'getBrandWCPayRequest', {
-                                    "appId": jsStr.appId,
-                                    "timeStamp": jsStr.timeStamp,
-                                    "nonceStr": jsStr.nonceStr,
-                                    "package": jsStr.package,
-                                    "signType": jsStr.signType,
-                                    "paySign": jsStr.paySign
-                                },
-                                function (res) {
-                                    if (res.err_msg == "get_brand_wcpay_request:ok") {
-                                        // 使用以上方式判断前端返回,微信团队郑重提示：
-                                        //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
-                                    }
-                                });
-                        }
+        params = {
+            pay_amt: document.getElementById('payNum').innerHTML,
+            open_id: openId,
+            parkId: parkId,
+            plate: document.getElementById('plateNumber').innerHTML,
+            lpDepartureCname: lpDepartureCname
+        };
+        $.ajax({
+            url: "http://hfzf.jinshipark.com/hfzf-api/adapay/noPlatePayExecutePayment",
+            // url: "http://localhost:8090/adapay/noPlatePayExecutePayment",
+            contentType: "application/json",
+            dataType: "json",
+            type: "POST",
+            data: JSON.stringify(params),
+            success: function (res) {
+                if (res.status === 200) {
+                    let jsStr = res.data;
 
-                        if (typeof WeixinJSBridge == "undefined") {
-                            if (document.addEventListener) {
-                                document.addEventListener('WeixinJSBridgeReady', onBridgeReady(jsStr), false);
-                            } else if (document.attachEvent) {
-                                document.attachEvent('WeixinJSBridgeReady', onBridgeReady(jsStr));
-                                document.attachEvent('onWeixinJSBridgeReady', onBridgeReady(jsStr));
-                            }
-                        } else {
-                            onBridgeReady(jsStr);
-                        }
-                    } else if (res.status === 500) {
-                        window.location.href = './error.html?msg=' + encodeURIComponent(res.msg);
+                    function onBridgeReady(jsStr) {
+                        WeixinJSBridge.invoke(
+                            'getBrandWCPayRequest', {
+                                "appId": jsStr.appId,
+                                "timeStamp": jsStr.timeStamp,
+                                "nonceStr": jsStr.nonceStr,
+                                "package": jsStr.package,
+                                "signType": jsStr.signType,
+                                "paySign": jsStr.paySign
+                            },
+                            function (res) {
+                                if (res.err_msg == "get_brand_wcpay_request:ok") {
+                                    // 使用以上方式判断前端返回,微信团队郑重提示：
+                                    //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+                                }
+                            });
                     }
-                },
-                err: function (res) {
-                    console.log(res)
+
+                    if (typeof WeixinJSBridge == "undefined") {
+                        if (document.addEventListener) {
+                            document.addEventListener('WeixinJSBridgeReady', onBridgeReady(jsStr), false);
+                        } else if (document.attachEvent) {
+                            document.attachEvent('WeixinJSBridgeReady', onBridgeReady(jsStr));
+                            document.attachEvent('onWeixinJSBridgeReady', onBridgeReady(jsStr));
+                        }
+                    } else {
+                        onBridgeReady(jsStr);
+                    }
+                } else if (res.status === 500) {
+                    window.location.href = './error.html?msg=' + encodeURIComponent(res.msg);
                 }
-            });
-        }
+            },
+            err: function (res) {
+                console.log(res)
+            }
+        });
     };
 
     function getParkInfo() {
@@ -364,44 +338,6 @@
             }
         }
         return fmt;
-    }
-
-    setTimer();
-
-    function setTimer() {
-        // setInterval(checkPayResult, 3000);
-    }
-
-    // 查询是否支付成功
-    function checkPayResult() {
-        alert("---");
-        // var orderId = this.orderId;
-        // var userInfo = this.userInfo;
-        //
-        // // 发起请求获得微信支付扫描二维码
-        // var serverUrl = app.serverUrl;
-        // axios.defaults.withCredentials = true;
-        // axios.post(
-        //     serverUrl + '/orders/getPaidOrderInfo?orderId=' + orderId,
-        //     {},
-        //     {
-        //         headers: {
-        //             'headerUserId': userInfo.id,
-        //             'headerUserToken': userInfo.userUniqueToken
-        //         }
-        //     })
-        //     .then(res => {
-        //         if (res.data.status == 200) {
-        //             var orderStatus = res.data.data;
-        //             // console.log(orderStatus);
-        //
-        //             if (orderStatus.orderStatus == 20) {
-        //                 window.location.href = "success.html?orderId=" + orderId + "&orderAmount=" + this.paymentInfo.amount;
-        //             }
-        //         } else {
-        //             alert(res.data.msg);
-        //         }
-        //     });
     }
 </script>
 </html>
