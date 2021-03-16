@@ -84,9 +84,9 @@
             data: JSON.stringify(params),
             success: function (res) {
                 if (res.status === 200) {
-                    window.location.href = './success.html?parkId=' + parkId + "&carNum=" + encodeURIComponent(carNum);
+                    window.location.href = 'http://out.jinshipark.com/noplate/success.html?parkId=' + parkId + "&carNum=" + encodeURIComponent(carNum);
                 } else if (res.status === 500) {
-                    window.location.href = './error.html?msg=' + encodeURIComponent(res.msg) + "&parkId=" + parkId;
+                    window.location.href = 'http://out.jinshipark.com/noplate/error.html?msg=' + encodeURIComponent(res.msg) + "&parkId=" + parkId;
                 }
             },
             err: function (res) {

@@ -113,6 +113,7 @@
     let parkId = getSearchString('parkId', search);
     let lpDepartureCname = getSearchString('lpDepartureCname', search);
     let openId = getSearchString('openId', search);
+    let areaName = getSearchString('areaName', search);
     let params = '';
     //加载上下广告图片
     if (parkId !== '' && parkId !== undefined) {
@@ -229,7 +230,11 @@
                         onBridgeReady(jsStr);
                     }
                 } else if (res.status === 500) {
-                    window.location.href = './error.html?msg=' + encodeURIComponent(res.msg);
+                    if(res.msg==='支付成功'){
+                        window.location.href = 'http://out.jinshipark.com/noplate/success.html?msg=' + encodeURIComponent(res.msg);
+                    }else {
+                        window.location.href = 'http://out.jinshipark.com/noplate/error.html?msg=' + encodeURIComponent(res.msg);
+                    }
                 }
             },
             err: function (res) {
@@ -242,7 +247,9 @@
         let toUpperCase = openId.replace("_", "").replace("-", "").toUpperCase();
         let carNum = "无" + toUpperCase.substr(toUpperCase.length - 6, toUpperCase.length);
         params = {
-            "lpLincensePlateIdCar": carNum
+            lpLincensePlateIdCar: carNum,
+            lpParkingName:parkId,
+            lpCarType:areaName
         };
         $.ajax({
             url: "http://hfzf.jinshipark.com/hfzf-api/lincensePlate/getLincensePlateByNoPlate",

@@ -26,12 +26,9 @@
     <div id="success-content">
         <div class="success-img">
             <img src="success.png" alt="">
-            <p class="success-p"><span>入场成功</span></p>
-            <div class="success_info" id="success_info">
-                <p>车牌：<span>苏EH7H99</span></p>
-                <p>入场时间：<span>2020-12-29 16:00:00</span></p>
-                <p>车场名称：<span>共青路P1P3停车场</span></p>
-            </div>
+        </div>
+        <div class="success_info" id="success_info">
+
         </div>
     </div>
     <div class="icon-divv">
@@ -45,8 +42,13 @@
     // $("#useFoot").attr("src", "http://syq.jinshipark.com/images/yhq-success2.jpg");
     let parkId = decodeURIComponent(getQueryVariable('parkId'));
     let carNum = decodeURIComponent(getQueryVariable('carNum'));
+    let msg = decodeURIComponent(getQueryVariable('msg'));
+    if (msg === "false" || msg === '' || msg === undefined) {
+        getLincensePlateInfo();
+    } else if (msg === "支付成功") {
+        $(".success-img").append(" <p class=\"error-pp\"><span>出场成功</span></p>");
+    }
     //加载上下广告图片
-    console.log(parkId);
     if (parkId === "false" || parkId === '' || parkId === undefined) {
         $("#useHead").attr("src", "http://syq.jinshipark.com/images/yhq-success1.jpg");
         $("#useFoot").attr("src", "http://syq.jinshipark.com/images/yhq-success2.jpg");
@@ -119,6 +121,7 @@
             data: JSON.stringify(prarm),
             success: function (data) {
                 if (data.status === 200) {
+                    $(".success-img").append("<p class=\"success-p\"><span>入场成功</span></p>");
                     $("#success_info").append("" +
                         "                <p>车牌：<span>" + carNum + "</span></p>\n" +
                         "                <p>入场时间：<span>" + dateFormat(fmt, new Date(data.data.lpInboundTime)) + "</span></p>\n" +
@@ -150,8 +153,6 @@
         }
         return fmt;
     }
-
-    getLincensePlateInfo();
 </script>
 </body>
 </html>

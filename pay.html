@@ -24,14 +24,16 @@
     let search = window.location.search;
     let lpDepartureCname = getSearchString('lpDepartureCname', search);//出场口名
     let parkId = getSearchString('parkId', search);//出场口名
+    let areaName = getSearchString('areaName', search);
     let code = getSearchString('code', search);
     let state = getSearchString('state', search);
     let params = '';
     if (code !== '' && code !== undefined) {
         let stateStr = decodeURIComponent(state);
         let arr = stateStr.split(",");
-        parkId = arr[0];
-        lpDepartureCname = arr[1];
+        areaName = arr[0];
+        parkId = arr[1];
+        lpDepartureCname = arr[2];
         let param = {
             "code": code
         };
@@ -44,7 +46,7 @@
             success: function (data) {
                 if (data.status === 200) {
                     openId = data.data;
-                    window.location.href = './noPlatePay.html?parkId=' + parkId + '&lpDepartureCname=' + lpDepartureCname + '&openId=' + openId;
+                    window.location.href = './noPlatePay.html?parkId=' + parkId + '&lpDepartureCname=' + lpDepartureCname + '&openId=' + openId + "&areaName=" + areaName;
                 } else {
                     window.location.href = './error.html?msg=' + encodeURIComponent(data.msg) + "&parkId=" + parkId;
                 }
@@ -58,7 +60,7 @@
         if (browser.match(/Alipay/i) == "alipay") {
             alert("请用微信扫一扫出场");
         } else if (browser.match(/MicroMessenger/i) == "micromessenger") {
-            state = parkId + "," + lpDepartureCname;
+            state = areaName + parkId + "," + lpDepartureCname;
             let url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + appid + '&redirect_uri=' + urlNow + '&response_type=code&scope=' + scope + '&state=' + encodeURIComponent(state) + '&connect_redirect=1#wechat_redirect';
             window.location.replace(url);
         }
