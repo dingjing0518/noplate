@@ -60,7 +60,7 @@
         if (browser.match(/Alipay/i) == "alipay") {
             alert("请用微信扫一扫出场");
         } else if (browser.match(/MicroMessenger/i) == "micromessenger") {
-            state = areaName + parkId + "," + lpDepartureCname;
+            state = areaName + "," + parkId + "," + lpDepartureCname;
             let url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + appid + '&redirect_uri=' + urlNow + '&response_type=code&scope=' + scope + '&state=' + encodeURIComponent(state) + '&connect_redirect=1#wechat_redirect';
             window.location.replace(url);
         }

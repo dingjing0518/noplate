@@ -248,8 +248,8 @@
         let carNum = "无" + toUpperCase.substr(toUpperCase.length - 6, toUpperCase.length);
         params = {
             lpLincensePlateIdCar: carNum,
-            lpParkingName:parkId,
-            lpCarType:areaName
+            lpParkingName: parkId,
+            lpCarType: areaName
         };
         $.ajax({
             url: "http://hfzf.jinshipark.com/hfzf-api/lincensePlate/getLincensePlateByNoPlate",
