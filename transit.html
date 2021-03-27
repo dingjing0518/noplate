@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="stylesheet" href="./libs/style.add.css" type="text/css">
+    <script src="libs/jquery.min.js"></script>
+</head>
+<style>
+    .box {
+        width: 90%;
+        height: 45px;
+        display: flex;
+        margin-left: 5%;
+    }
+
+    .box p {
+        height: 30px;
+        line-height: 30px;
+    }
+
+    .box p:first-child {
+        flex: 1;
+        text-align: center;
+        border: 1px rgb(22, 21, 21) solid;
+    }
+
+    .box p:last-child {
+        flex: 3;
+        border: 1px rgb(102, 172, 139) solid;
+        padding-left: 10px;
+    }
+    #icon-p{
+        width: 100%;
+        height: 5rem;
+        color: black;
+        line-height: 5rem;
+        text-align: center;
+        background-color: #EDE6DC;
+        font-size: 18px;
+        padding-top: 20%;
+    }
+    .goPay {
+        width: 100%;
+        height: 40px;
+        text-align: center;
+        line-height: 40px;
+    }
+
+    .goPay button {
+        width: 170px;
+        height: 38px;
+        color: rgb(32, 158, 53);
+        font-size: 20px;
+    }
+
+    #getCar {
+        margin-top: 15%;
+    }
+
+    #useFoot {
+        margin-bottom: 5%;
+    }
+    #carLicenseBox2 {
+        width: 90%;
+        margin-left: 5%;
+        border-radius: 10px;
+        overflow: hidden;
+        padding-top: 20%;
+        padding-bottom: 20%;
+    }
+    #content{
+        height: 100%;
+    }
+
+</style>
+
+<body>
+<!-- <p class="icon-er"></p> -->
+<!-- <div class="divv">
+    <img src="http://www.visionunion.com/admin/data/file/img/20191126/20191126000605.gif" alt="">
+</div>  -->
+<div id="container">
+    <div class="icon-divv">
+        <a id="headA">
+            <img id="useHead" onerror="this.src='http://syq.jinshipark.com/images/yhq-first1.jpg'">
+        </a>
+    </div>
+    <div id="content">
+        <p class="icon-p" id="icon-p"><span>请点击按钮入场</span></p>
+        <div id="carLicenseBox2">
+            <div class="goPay">
+                <button id="pay">入场</button>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div class="icon-divv">
+        <a id="footA">
+            <img id="useFoot" onerror="this.src='http://syq.jinshipark.com/images/yhq-first2.jpg'">
+        </a>
+    </div>
+    <div style="display: none;">
+        <p id="aaa"></p>
+    </div>
+</div>
+</body>
+<script>
+    let fmt = "YYYY-mm-dd HH:MM";
+    let search = window.location.search;
+    let parkId = getSearchString('parkId', search);
+    let lpInboundCname = getSearchString('lpInboundCname', search);
+    let openId = getSearchString('openId', search);
+    let areaName = getSearchString('areaName', search);
+    let params = '';
+    //加载上下广告图片
+    if (parkId !== '' && parkId !== undefined) {
+        getImages();
+    } else {
+        $("#useHead").attr("src", "http://syq.jinshipark.com/images/yhq-first1.jpg");
+        $("#useFoot").attr("src", "http://syq.jinshipark.com/images/yhq-first2.jpg");
+    }
+
+    //获取
+    function getImages() {
+        params = {
+            parkId: parkId,
+            type: "out-First"
+        };
+        $.ajax({
+            url: "http://hfzf.jinshipark.com/hfzf-api/jinshiparkAdvertImage/getJinshiparkAdvertImageByTypeAndArea",
+            // url: "http://localhost:8090/jinshiparkAdvertImage/getJinshiparkAdvertImageByTypeAndArea",
+            contentType: "application/json",
+            dataType: "json",
+            type: "POST",
+            data: JSON.stringify(params),
+            success: function (res) {
+                if (res.status === 200) {
+                    for (let i = 0; i < res.data.length; i++) {
+                        if (res.data[i].address === "out-FirstUp") {
+                            if (res.data[i].imagepath != null) {
+                                $("#useHead").attr("src", res.data[i].imagepath);
+                            }
+                            if (res.data[i].weblink != null) {
+                                document.getElementById("headA").href = res.data[i].weblink;
+                            }
+                        } else if (res.data[i].address === "out-FirstDown") {
+                            if (res.data[i].imagepath != null) {
+                                $("#useFoot").attr("src", res.data[i].imagepath);
+                            }
+                            if (res.data[i].weblink != null) {
+                                document.getElementById("footA").href = res.data[i].weblink;
+                            }
+                        }
+                    }
+                }
+            },
+            err: function (res) {
+                console.log(res)
+            }
+        });
+    }
+
+    //入场
+    var pay = document.getElementById('pay');
+    pay.onclick = function () {
+        let countdown = 10;
+        setTime(countdown);
+
+        function setTime(countdown) {
+            if (countdown === 0) {
+                pay.removeAttribute("disabled");
+                document.getElementById('pay').innerHTML = "入场";
+            } else {
+                pay.setAttribute("disabled", true);
+                document.getElementById('pay').innerHTML = "入场中(" + countdown + ")";
+                countdown--;
+                setTimeout(function () {
+                    setTime(countdown);
+                }, 1000)
+            }
+        }
+        let toUpperCase = openId.replace("_", "").replace("-", "").toUpperCase();
+        let carNum = "无" + toUpperCase.substr(toUpperCase.length - 6, toUpperCase.length);
+        params = {
+            lpLincensePlateIdCar: carNum,
+            lpCarType: areaName,
+            lpParkingName: parkId,
+            lpInboundCname: lpInboundCname
+        };
+        $.ajax({
+            url: "http://hfzf.jinshipark.com/hfzf-api/lincensePlate/saveLincensePlate",
+            // url: "http://localhost:8090/lincensePlate/saveLincensePlate",
+            contentType: "application/json",
+            dataType: "json",
+            type: "POST",
+            data: JSON.stringify(params),
+            success: function (res) {
+                if (res.status === 200) {
+                    window.location.href = 'http://out.jinshipark.com/noplate/success.html?parkId=' + parkId + "&carNum=" + encodeURIComponent(carNum);
+                } else if (res.status === 500) {
+                    window.location.href = 'http://out.jinshipark.com/noplate/error.html?msg=' + encodeURIComponent(res.msg) + "&parkId=" + parkId;
+                }
+            },
+            err: function (res) {
+                console.log(res)
+            }
+        });
+    };
+
+    function getSearchString(key, Url) {
+        var str = Url;
+        str = str.substring(1, str.length); // 获取URL中?之后的字符（去掉第一位的问号）
+        // 以&分隔字符串，获得类似name=xiaoli这样的元素数组
+        var arr = str.split("&");
+        var obj = new Object();
+        // 将每一个数组元素以=分隔并赋给obj对象
+        for (var i = 0; i < arr.length; i++) {
+            var tmp_arr = arr[i].split("=");
+            obj[decodeURIComponent(tmp_arr[0])] = decodeURIComponent(tmp_arr[1]);
+        }
+        return obj[key];
+    }
+</script>
+</html>

@@ -44,7 +44,7 @@
     }
 
     .goPay button {
-        width: 120px;
+        width: 170px;
         height: 38px;
         color: rgb(32, 158, 53);
         font-size: 20px;
@@ -93,7 +93,7 @@
                 <p id='payNum'></p>
             </div>
             <div class="goPay">
-                <button id="pay">支付</button>
+                <button id="pay">支付出场</button>
             </div>
         </div>
     </div>
@@ -172,10 +172,10 @@
         function setTime(countdown) {
             if (countdown === 0) {
                 pay.removeAttribute("disabled");
-                document.getElementById('pay').innerHTML = "支付";
+                document.getElementById('pay').innerHTML = "支付出场";
             } else {
                 pay.setAttribute("disabled", true);
-                document.getElementById('pay').innerHTML = "支付中(" + countdown + ")";
+                document.getElementById('pay').innerHTML = "支付出场中(" + countdown + ")";
                 countdown--;
                 setTimeout(function () {
                     setTime(countdown);

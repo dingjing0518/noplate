@@ -46,7 +46,8 @@
             success: function (data) {
                 if (data.status === 200) {
                     openId = data.data;
-                    save();
+                    window.location.href = './transit.html?parkId=' + parkId + '&areaName=' + areaName + '&openId=' + openId + "&areaName=" + areaName + "&lpInboundCname=" + lpInboundCname;
+                    // save();
                 } else {
                     window.location.href = './error.html?msg=' + encodeURIComponent(data.msg);
                 }
